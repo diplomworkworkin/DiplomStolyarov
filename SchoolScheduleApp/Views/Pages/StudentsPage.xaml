@@ -1,0 +1,138 @@
+﻿<Page x:Class="SchoolScheduleApp.Views.Pages.StudentsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:SchoolScheduleApp.Views.Pages" xmlns:vm="clr-namespace:SchoolScheduleApp.ViewModels"
+      mc:Ignorable="d" 
+      d:DesignHeight="600" d:DesignWidth="900"
+      Title="StudentsPage">
+
+    <Page.DataContext>
+        <vm:StudentsViewModel/>
+    </Page.DataContext>
+
+    <Grid Margin="40,0,40,40">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <DockPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="Учебные классы" Foreground="{DynamicResource PrimaryText}" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="+ Добавить класс"
+                Command="{Binding AddClassCommand}"
+                Background="{DynamicResource AccentColor}" Foreground="White" FontWeight="Bold"
+                Padding="12,6" BorderThickness="0" Cursor="Hand" Height="34">   
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="10"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </StackPanel>
+        </DockPanel>
+
+        <Border Style="{StaticResource GlassCard}" Grid.Row="1" Padding="0">
+
+            <DataGrid ItemsSource="{Binding ClassesList}"
+                      IsReadOnly="True"
+                      Background="Transparent" BorderThickness="0" 
+                      HeadersVisibility="Column" 
+                      GridLinesVisibility="All" 
+                      HorizontalGridLinesBrush="{DynamicResource CardBorder}" 
+                      VerticalGridLinesBrush="{DynamicResource CardBorder}"
+                      RowBackground="Transparent" 
+                      AlternatingRowBackground="{DynamicResource HoverBackground}"
+                      Foreground="{DynamicResource PrimaryText}"
+                      AutoGenerateColumns="False" CanUserAddRows="False"
+                      RowHeight="45" ColumnHeaderHeight="45"
+                      HorizontalAlignment="Stretch"
+                      ColumnWidth="*"
+                      PreviewMouseDown="NonInteractiveGrid_PreviewMouseDown"
+                      PreviewKeyDown="NonInteractiveGrid_PreviewKeyDown">
+
+                <DataGrid.Resources>
+                    <Style TargetType="DataGridColumnHeader">
+                        <Setter Property="Background" Value="{DynamicResource CardBorder}"/>
+                        <Setter Property="Foreground" Value="{DynamicResource AccentColor}"/>
+                        <Setter Property="FontWeight" Value="Bold"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                        <Setter Property="Padding" Value="15,0,0,0"/>
+                        <Setter Property="BorderBrush" Value="{DynamicResource CardBorder}"/>
+                        <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                    </Style>
+
+                    <Style TargetType="DataGridCell">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="DataGridCell">
+                                    <Border Padding="15,0,0,0" Background="Transparent">
+                                        <ContentPresenter VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <!-- ИСПРАВЛЕНО: Цвет текста из темы -->
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource AccentColor}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource SelectedText}"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.Resources>
+
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="80"/>
+
+                    <DataGridTemplateColumn Header="Класс" Width="1.1*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border Background="{DynamicResource AccentColor}" CornerRadius="5" Padding="8,2" HorizontalAlignment="Left">
+                                    <TextBlock Text="{Binding Name}" Foreground="White" FontWeight="Bold"/>
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTextColumn Header="Учеников" Binding="{Binding StudentCount}" Width="0.9*"/>
+                    <DataGridTextColumn Header="Смена" Binding="{Binding Shift}" Width="0.7*"/>
+                    <DataGridTextColumn Header="Куратор" Binding="{Binding CuratorTeacher.FullName}" Width="2.2*"/>
+
+                    <DataGridTemplateColumn Header="Действия" Width="140">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Content="✎"
+                        ToolTip="Редактировать"
+                        Background="Transparent"
+                        Foreground="{DynamicResource AccentColor}"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Margin="0,0,15,0"
+                        FontSize="16"
+                        Command="{Binding DataContext.EditClassCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                        CommandParameter="{Binding}"/>
+
+                                    <Button Content="✕"
+                        ToolTip="Удалить"
+                        Background="Transparent"
+                        Foreground="#ff4d4d"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        FontSize="16"
+                        Command="{Binding DataContext.DeleteClassCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                        CommandParameter="{Binding}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+    </Grid>
+</Page>

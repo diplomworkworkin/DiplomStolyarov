@@ -1,0 +1,275 @@
+﻿<Page x:Class="SchoolScheduleApp.Views.Pages.SchedulePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      mc:Ignorable="d"
+      d:DesignHeight="600" d:DesignWidth="900"
+      Title="SchedulePage">
+
+    <Page.Resources>
+        <!-- Цвета кнопки редактирования -->
+        <Style x:Key="EditButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryText}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="5">
+                            <TextBlock Text="✎" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource HoverBackground}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource AccentColor}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Стиль ComboBox, чтобы в темной теме текст был читаем -->
+        <!-- Важно: BasedOn подтягивает общий шаблон ComboBox из App.xaml (с правильным Popup) -->
+        <Style x:Key="TopComboBoxStyle" TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="Padding" Value="8,0"/>
+            <Setter Property="Background" Value="#F3F5F7"/>
+            <Setter Property="BorderBrush" Value="#CCD3D9"/>
+            <Setter Property="Foreground" Value="#1F1F1F"/>
+        </Style>
+
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
+            <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardBorder}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="10,8"/>
+        </Style>
+
+        <Style TargetType="DataGridRow">
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardBorder}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="MinHeight" Value="36"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource HoverBackground}"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource AccentColor}"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="DataGridCell">
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+        <!-- Вкладки расписания: аккуратный вид (под обе темы) -->
+        <Style x:Key="ScheduleTabControlStyle" TargetType="TabControl">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="TabStripPlacement" Value="Top"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+
+        <Style x:Key="ScheduleTabItemStyle" TargetType="TabItem">
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryText}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Margin" Value="0,0,14,0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Grid>
+                            <ContentPresenter ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <Border x:Name="Underline" Height="2" Background="Transparent"
+                                    VerticalAlignment="Bottom" CornerRadius="2"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
+                                <Setter TargetName="Underline" Property="Background" Value="{DynamicResource AccentColor}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ВЕРХНЯЯ ПАНЕЛЬ -->
+        <Border Grid.Row="0"
+                Margin="0,0,0,20"
+                Padding="0,0,0,15"
+                BorderBrush="{DynamicResource CardBorder}"
+                BorderThickness="0,0,0,1">
+            <DockPanel>
+                <StackPanel>
+                    <TextBlock Text="Расписание занятий"
+                               Foreground="{DynamicResource PrimaryText}"
+                               FontSize="24"
+                               FontWeight="Bold"/>
+                    <TextBlock Text="Режим редактирования"
+                               Foreground="{DynamicResource AccentColor}"
+                               FontSize="12"
+                               Margin="0,5,0,0"/>
+                    <TextBlock Text="{Binding WeekRangeText}"
+                               Foreground="{DynamicResource SecondaryText}"
+                               FontSize="12"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center">
+
+                    <!-- ВЫБОР КЛАССА (вместо хардкода 11-А) -->
+                    <Border CornerRadius="8"
+                            Background="{DynamicResource InputBackground}"
+                            BorderBrush="{DynamicResource CardBorder}"
+                            BorderThickness="1"
+                            Margin="0,0,15,0"
+                            Padding="12,8" Width="126" Height="52">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Класс: "
+                                       Foreground="{DynamicResource SecondaryText}"
+                                       VerticalAlignment="Center"/>
+
+                            <ComboBox Style="{StaticResource TopComboBoxStyle}"
+                                      Width="68"
+                                      ItemsSource="{Binding Classes}"
+                                      DisplayMemberPath="Name"
+                                      SelectedValuePath="Id"
+                                      SelectedValue="{Binding SelectedClassId}"
+                                      VerticalAlignment="Center" Height="21"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border CornerRadius="8"
+                            Background="{DynamicResource InputBackground}"
+                            BorderBrush="{DynamicResource CardBorder}"
+                            BorderThickness="1"
+                            Margin="0,0,15,0"
+                            Padding="12,8" Width="206" Height="54">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Неделя: "
+                                       Foreground="{DynamicResource SecondaryText}"
+                                       VerticalAlignment="Center"/>
+
+                            <ComboBox Style="{StaticResource TopComboBoxStyle}"
+                                      Width="138"
+                                      ItemsSource="{Binding WeekOptions}"
+                                      DisplayMemberPath="Name"
+                                      SelectedValuePath="Offset"
+                                      SelectedValue="{Binding SelectedWeekOffset}"
+                                      VerticalAlignment="Center" Height="25"/>
+                        </StackPanel>
+                    </Border>
+
+                    <StackPanel Orientation="Vertical"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top">
+                        <Button Content="✎ Ручное редактирование"
+                                Margin="0,0,0,8"
+                                Padding="14,10"
+                                BorderThickness="1"
+                                BorderBrush="{DynamicResource AccentColor}"
+                                Background="Transparent"
+                                Foreground="{DynamicResource AccentColor}"
+                                FontWeight="SemiBold"
+                                Cursor="Hand"
+                                Click="BtnManualEdit_Click"
+                                Height="38"
+                                MinWidth="240"/>
+
+                        <!-- КНОПКА АВТОСОСТАВЛЕНИЯ -->
+                        <Button Content="⚡ Авто-составление"
+                                Command="{Binding AutoGenerateScheduleCommand}"
+                                Background="{DynamicResource AccentColor}"
+                                Foreground="White"
+                                FontWeight="Bold"
+                                Padding="14,7"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                Height="39"
+                                MinWidth="240">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="8"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- ОСНОВНОЙ КОНТЕНТ (оставляем только табличный вид, без "Сетки") -->
+        <Grid Grid.Row="1" Margin="0,15,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Вкладки дней недели.
+                         ВАЖНО: используем биндинг SelectedIndex, а не обработчик SelectionChanged.
+                         Так вкладки точно работают во всех темах/стилях и не зависят от code-behind. -->
+            <TabControl Grid.Row="0"
+                                Style="{StaticResource ScheduleTabControlStyle}"
+                                SelectedIndex="{Binding SelectedDayTabIndex, Mode=TwoWay}">
+                <TabItem Header="Понедельник" Style="{StaticResource ScheduleTabItemStyle}"/>
+                <TabItem Header="Вторник" Style="{StaticResource ScheduleTabItemStyle}"/>
+                <TabItem Header="Среда" Style="{StaticResource ScheduleTabItemStyle}"/>
+                <TabItem Header="Четверг" Style="{StaticResource ScheduleTabItemStyle}"/>
+                <TabItem Header="Пятница" Style="{StaticResource ScheduleTabItemStyle}"/>
+            </TabControl>
+
+            <!-- Табличный вид выбранного дня -->
+            <Border Grid.Row="1"
+                            CornerRadius="14"
+                            BorderBrush="{DynamicResource CardBorder}"
+                            BorderThickness="1"
+                            Background="{DynamicResource CardBackground}"
+                            ClipToBounds="True"
+                            Margin="0,10,0,0">
+
+                <DataGrid ItemsSource="{Binding ScheduleTable}"
+                              Style="{StaticResource WowDataGrid}"
+                              materialDesign:DataGridAssist.CellPadding="10,6"
+                              materialDesign:DataGridAssist.ColumnHeaderPadding="10,8"
+                              Margin="0">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Урок" Binding="{Binding LessonIndex}" Width="70"/>
+                        <DataGridTextColumn Header="Время" Binding="{Binding TimeRange}" Width="130"/>
+                        <DataGridTextColumn Header="Предмет" Binding="{Binding Subject}" Width="*"/>
+                        <DataGridTextColumn Header="Учитель" Binding="{Binding Teacher}" Width="240"/>
+                        <DataGridTextColumn Header="Кабинет" Binding="{Binding Classroom}" Width="130"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>

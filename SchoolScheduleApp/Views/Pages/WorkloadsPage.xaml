@@ -1,0 +1,206 @@
+<Page x:Class="SchoolScheduleApp.Views.Pages.WorkloadsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d"
+      Title="WorkloadsPage">
+
+    <Page.Resources>
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
+            <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardBorder}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="10,8"/>
+        </Style>
+
+        <Style TargetType="DataGridRow">
+            <Setter Property="BorderBrush" Value="{DynamicResource CardBorder}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource HoverBackground}"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource AccentColor}"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="DataGridCell">
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryText}"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+        <Style x:Key="WorkloadFormComboBoxStyle" TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="Background" Value="#F3F5F7"/>
+            <Setter Property="BorderBrush" Value="#CCD3D9"/>
+            <Setter Property="Foreground" Value="#1F1F1F"/>
+        </Style>
+    </Page.Resources>
+
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="360"/>
+        </Grid.ColumnDefinitions>
+
+        <Border Background="{DynamicResource CardBackground}"
+                BorderBrush="{DynamicResource CardBorder}"
+                BorderThickness="1"
+                CornerRadius="10"
+                Padding="15"
+                Margin="0,0,15,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <DockPanel Grid.Row="0" Margin="0,0,0,12">
+                    <TextBlock Text="Нагрузка (Workloads)"
+                               Foreground="{DynamicResource PrimaryText}"
+                               FontSize="20"
+                               FontWeight="Bold"
+                               DockPanel.Dock="Left"/>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="Обновить"
+                                Command="{Binding RefreshCommand}"
+                                Background="Transparent"
+                                Foreground="{DynamicResource SecondaryText}"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                Margin="0,0,10,0"/>
+
+                        <Button Content="Удалить"
+                                Command="{Binding DeleteCommand}"
+                                Background="Transparent"
+                                Foreground="#ff4d4d"
+                                BorderThickness="0"
+                                Cursor="Hand"/>
+                    </StackPanel>
+                </DockPanel>
+
+                <Border Grid.Row="1"
+                        CornerRadius="10"
+                        BorderBrush="{DynamicResource CardBorder}"
+                        BorderThickness="1"
+                        Background="{DynamicResource CardBackground}"
+                        ClipToBounds="True">
+                    <DataGrid Style="{StaticResource WowDataGrid}"
+                              materialDesign:DataGridAssist.CellPadding="10,6"
+                              materialDesign:DataGridAssist.ColumnHeaderPadding="10,8"
+                              ItemsSource="{Binding Workloads}"
+                              SelectedItem="{Binding SelectedWorkload}"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              CanUserReorderColumns="False"
+                              CanUserResizeColumns="False"
+                              CanUserResizeRows="False"
+                              CanUserSortColumns="False"
+                              IsReadOnly="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Класс" Binding="{Binding ClassName}" Width="90"/>
+                            <DataGridTextColumn Header="Предмет" Binding="{Binding SubjectName}" Width="*"/>
+                            <DataGridTextColumn Header="Учитель" Binding="{Binding TeacherName}" Width="210"/>
+                            <DataGridTextColumn Header="Часы/нед" Binding="{Binding HoursPerWeek}" Width="85"/>
+                            <DataGridTextColumn Header="Часы/год" Binding="{Binding YearHours}" Width="85"/>
+                            <DataGridTextColumn Header="Остаток" Binding="{Binding RemainingHours}" Width="85"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+            </Grid>
+        </Border>
+
+        <Border Grid.Column="1"
+                Background="{DynamicResource CardBackground}"
+                BorderBrush="{DynamicResource CardBorder}"
+                BorderThickness="1"
+                CornerRadius="10"
+                Padding="15">
+            <StackPanel>
+                <TextBlock Text="Добавить / Изменить"
+                           Foreground="{DynamicResource PrimaryText}"
+                           FontSize="18"
+                           FontWeight="Bold"
+                           Margin="0,0,0,15"/>
+
+                <TextBlock Text="Класс:" Foreground="{DynamicResource SecondaryText}" Margin="0,0,0,6"/>
+                <ComboBox ItemsSource="{Binding Classes}"
+                          DisplayMemberPath="Name"
+                          SelectedValuePath="Id"
+                          SelectedValue="{Binding FormClassId}"
+                          Style="{StaticResource WorkloadFormComboBoxStyle}"/>
+
+                <TextBlock Text="Учитель:" Foreground="{DynamicResource SecondaryText}" Margin="0,12,0,6"/>
+                <ComboBox ItemsSource="{Binding Teachers}"
+                          DisplayMemberPath="FullName"
+                          SelectedValuePath="Id"
+                          SelectedValue="{Binding FormTeacherId}"
+                          Style="{StaticResource WorkloadFormComboBoxStyle}"/>
+
+                <TextBlock Text="Предмет:" Foreground="{DynamicResource SecondaryText}" Margin="0,12,0,6"/>
+                <ComboBox ItemsSource="{Binding Subjects}"
+                          DisplayMemberPath="Name"
+                          SelectedValuePath="Id"
+                          SelectedValue="{Binding FormSubjectId}"
+                          Style="{StaticResource WorkloadFormComboBoxStyle}"/>
+
+                <TextBlock Text="Часов в неделю (1..10):" Foreground="{DynamicResource SecondaryText}" Margin="0,12,0,6"/>
+                <TextBox Text="{Binding FormHoursPerWeek}"
+                         Height="34"
+                         Padding="8,0"
+                         Background="{DynamicResource InputBackground}"
+                         BorderBrush="{DynamicResource CardBorder}"
+                         Foreground="{DynamicResource PrimaryText}"/>
+
+                <TextBlock Text="Годовых часов (минимум = часов/нед):" Foreground="{DynamicResource SecondaryText}" Margin="0,12,0,6"/>
+                <TextBox Text="{Binding FormYearHours}"
+                         Height="34"
+                         Padding="8,0"
+                         Background="{DynamicResource InputBackground}"
+                         BorderBrush="{DynamicResource CardBorder}"
+                         Foreground="{DynamicResource PrimaryText}"/>
+
+                <TextBlock Text="{Binding FormRemainingHoursText}"
+                           Foreground="{DynamicResource AccentColor}"
+                           FontWeight="SemiBold"
+                           Margin="0,10,0,0"/>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">
+                    <Button Content="Новая"
+                            Command="{Binding NewCommand}"
+                            Background="Transparent"
+                            Foreground="{DynamicResource SecondaryText}"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Margin="0,0,10,0"/>
+
+                    <Button Content="Сохранить"
+                            Command="{Binding SaveCommand}"
+                            Background="{DynamicResource AccentColor}"
+                            Foreground="White"
+                            FontWeight="Bold"
+                            Padding="16,8"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Height="35">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="8"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Page>

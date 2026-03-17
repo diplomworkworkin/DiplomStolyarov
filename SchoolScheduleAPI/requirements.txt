@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+sqlalchemy
+greenlet==3.0.3
+pydantic
+pydantic-settings
+pyodbc
+python-multipart
+python-jose[cryptography]
+passlib[bcrypt]

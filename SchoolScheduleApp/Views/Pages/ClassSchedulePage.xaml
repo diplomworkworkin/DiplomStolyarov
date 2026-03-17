@@ -1,0 +1,86 @@
+﻿<Page x:Class="SchoolScheduleApp.Views.Pages.ClassSchedulePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d"
+      d:DesignHeight="600" d:DesignWidth="900"
+      Title="ClassSchedulePage">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="Расписание класса"
+                       Foreground="{DynamicResource PrimaryText}"
+                       FontSize="24"
+                       FontWeight="Bold"/>
+            <TextBlock Text="Просмотр расписания выбранного класса"
+                       Foreground="{DynamicResource SecondaryText}"
+                       FontSize="12"
+                       Margin="0,6,0,0"/>
+            <TextBlock Text="{Binding WeekRangeText}"
+                       Foreground="{DynamicResource SecondaryText}"
+                       FontSize="12"
+                       Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <Border Grid.Row="1" Style="{StaticResource GlassCard}" Padding="16" Margin="0,0,0,20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                    <TextBlock Text="День недели" Foreground="{DynamicResource SecondaryText}" FontSize="11"/>
+                    <ComboBox ItemsSource="{Binding DayOptions}"
+                              SelectedItem="{Binding SelectedDay}"
+                              DisplayMemberPath="Name"
+                              Height="34"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                    <TextBlock Text="Неделя" Foreground="{DynamicResource SecondaryText}" FontSize="11"/>
+                    <ComboBox ItemsSource="{Binding WeekOptions}"
+                              SelectedItem="{Binding SelectedWeek}"
+                              DisplayMemberPath="Name"
+                              Height="34"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="Класс" Foreground="{DynamicResource SecondaryText}" FontSize="11"/>
+                    <ComboBox ItemsSource="{Binding ClassOptions}"
+                              SelectedItem="{Binding SelectedClass}"
+                              DisplayMemberPath="Name"
+                              IsEnabled="{Binding IsClassSelectionEnabled}"
+                              Height="34"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Text="{Binding ErrorMessage}" Foreground="#ff6b6b" FontWeight="Bold" Margin="0,0,0,10"/>
+
+            <DataGrid Grid.Row="1" Style="{StaticResource WowDataGrid}" ItemsSource="{Binding ScheduleRows}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="День" Binding="{Binding Day}" Width="150"/>
+                    <DataGridTextColumn Header="Время" Binding="{Binding TimeRange}" Width="140"/>
+                    <DataGridTextColumn Header="Предмет" Binding="{Binding Subject}" Width="*"/>
+                    <DataGridTextColumn Header="Учитель" Binding="{Binding Teacher}" Width="220"/>
+                    <DataGridTextColumn Header="Кабинет" Binding="{Binding Classroom}" Width="110"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+    </Grid>
+</Page>

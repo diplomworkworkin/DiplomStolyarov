@@ -1,0 +1,105 @@
+﻿<Window x:Class="SchoolScheduleApp.Views.Windows.ManualScheduleEditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Ручное редактирование расписания"
+        Width="1020"
+        Height="670"
+        MinWidth="920"
+        MinHeight="560"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
+        ResizeMode="CanResize"
+        AllowsTransparency="True"
+        Background="Transparent">
+    <Border CornerRadius="14"
+            Background="{DynamicResource WindowBackground}"
+            BorderBrush="{DynamicResource AccentColor}"
+            BorderThickness="1">
+        <Grid Margin="16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0">
+                <TextBlock Text="Ручное редактирование расписания"
+                       FontSize="22"
+                       FontWeight="Bold"
+                       Foreground="{DynamicResource PrimaryText}"
+                       Margin="0,0,0,8"/>
+                <TextBlock Text="Валидация: уникальный номер урока, диапазон по смене, совместимость учитель/предмет, конфликты по времени для учителя и кабинета."
+                       Foreground="{DynamicResource SecondaryText}"
+                       FontSize="12"
+                       Margin="0,0,0,8"/>
+            </StackPanel>
+
+            <DataGrid x:Name="LessonsGrid"
+                  Grid.Row="1"
+                  ItemsSource="{Binding Lessons}"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  HeadersVisibility="Column"
+                  SelectionMode="Single"
+                  SelectionUnit="FullRow"
+                  RowHeaderWidth="0"
+                  Background="{DynamicResource CardBackground}"
+                  Foreground="{DynamicResource PrimaryText}"
+                  CellEditEnding="LessonsGrid_CellEditEnding">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Урок" Binding="{Binding LessonIndex}" Width="80"/>
+                    <DataGridComboBoxColumn x:Name="SubjectColumn" Header="Предмет"
+                                        Width="*"
+                                        SelectedValueBinding="{Binding SubjectId, UpdateSourceTrigger=PropertyChanged}"
+                                        SelectedValuePath="Id"
+                                        DisplayMemberPath="Name"/>
+                    <DataGridTemplateColumn Header="Учитель" Width="260">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding TeacherName}" VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate>
+                            <DataTemplate>
+                                <ComboBox ItemsSource="{Binding AvailableTeachers}"
+                                      SelectedValuePath="Id"
+                                      DisplayMemberPath="FullName"
+                                      SelectedValue="{Binding TeacherId, UpdateSourceTrigger=PropertyChanged}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridComboBoxColumn x:Name="ClassroomColumn" Header="Кабинет"
+                                        Width="190"
+                                        SelectedValueBinding="{Binding ClassroomId, UpdateSourceTrigger=PropertyChanged}"
+                                        SelectedValuePath="Id"
+                                        DisplayMemberPath="Number"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <DockPanel Grid.Row="2" Margin="0,12,0,0">
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+                    <Button Content="+ Урок"
+                        Width="130"
+                        Margin="0,0,8,0"
+                        Click="BtnAddLesson_Click"/>
+                    <Button Content="Удалить урок"
+                        Width="140"
+                        Click="BtnDeleteLesson_Click"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Отмена"
+                        Width="100"
+                        Margin="0,0,8,0"
+                        Click="BtnCancel_Click"/>
+                    <Button Content="Сохранить"
+                        Width="130"
+                        Background="{DynamicResource AccentColor}"
+                        Foreground="White"
+                        Click="BtnSave_Click"/>
+                </StackPanel>
+            </DockPanel>
+        </Grid>
+    </Border>
+</Window>

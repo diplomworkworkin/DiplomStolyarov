@@ -1,0 +1,10 @@
+{
+  "IsDarkTheme": true,
+  "SchoolName": "School #11",
+  "LessonDuration": 45,
+  "StartTime": "08:00",
+  "ApiBaseUrl": "http://127.0.0.1:8000",
+  "RememberMe": false,
+  "SavedUsername": "",
+  "SavedPassword": ""
+}

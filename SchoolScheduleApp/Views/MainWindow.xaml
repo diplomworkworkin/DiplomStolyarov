@@ -1,0 +1,294 @@
+﻿<Window x:Class="SchoolScheduleApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:SchoolScheduleApp.ViewModels"
+        mc:Ignorable="d"
+        Title="Вход в систему" Height="650" Width="1000"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None" 
+        ResizeMode="NoResize"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Loaded="Window_Loaded">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
+        <Style x:Key="LoginInputContainerStyle" TargetType="Border">
+            <Setter Property="Height" Value="50"/>
+            <Setter Property="Margin" Value="0,0,0,20"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Background" Value="#20000000"/>
+            <Setter Property="BorderBrush" Value="#25FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                    <Setter Property="Background" Value="#2800D2FF"/>
+                    <Setter Property="BorderBrush" Value="#00D2FF"/>
+                    <Trigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard FillBehavior="HoldEnd">
+                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                 To="1.02"
+                                                 Duration="0:0:0.18"/>
+                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                 To="1.02"
+                                                 Duration="0:0:0.18"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.EnterActions>
+                    <Trigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard FillBehavior="HoldEnd">
+                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                 To="1"
+                                                 Duration="0:0:0.2"/>
+                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                 To="1"
+                                                 Duration="0:0:0.2"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.ExitActions>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="LoginTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="0,0,10,0"/>
+            <Setter Property="CaretBrush" Value="White"/>
+        </Style>
+
+        <Style x:Key="LoginPasswordBoxStyle" TargetType="PasswordBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="0,0,10,0"/>
+            <Setter Property="CaretBrush" Value="White"/>
+        </Style>
+    </Window.Resources>
+
+    <!-- Подключаем ViewModel -->
+    <Window.DataContext>
+        <vm:LoginViewModel/>
+    </Window.DataContext>
+
+    <!-- Основной контейнер с закруглением -->
+    <Border CornerRadius="20">
+        <!-- ТЕМНЫЙ ФОН ГРАДИЕНТОМ -->
+        <Border.Background>
+            <RadialGradientBrush GradientOrigin="0.5,0.5" Center="0.5,0.5" RadiusX="0.8" RadiusY="0.8">
+                <GradientStop Color="#0f2027" Offset="1"/>
+                <GradientStop Color="#203a43" Offset="0.5"/>
+                <GradientStop Color="#2c5364" Offset="0"/>
+            </RadialGradientBrush>
+        </Border.Background>
+
+        <Grid>
+            <!-- 1. ДЕКОРАЦИИ (Свечение) -->
+            <Ellipse Width="300" Height="300" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="-50,-50,0,0">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="#4000d2ff" Offset="0"/>
+                        <GradientStop Color="Transparent" Offset="1"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+
+            <Ellipse Width="400" Height="400" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-100,-100">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="#2000d2ff" Offset="0"/>
+                        <GradientStop Color="Transparent" Offset="1"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+
+            <!-- Кнопка ЗАКРЫТЬ (X) -->
+            <Button HorizontalAlignment="Right" VerticalAlignment="Top" Margin="20"
+                    Content="✕" Foreground="White" Background="Transparent" BorderThickness="0"
+                    FontSize="18" Cursor="Hand"
+                    Click="BtnClose_Click">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="Transparent">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+
+
+            <!-- 2. ЦЕНТРАЛЬНАЯ СТЕКЛЯННАЯ КАРТОЧКА -->
+            <Border Width="380" Height="500" CornerRadius="25"
+                    BorderBrush="#33FFFFFF" BorderThickness="1.5">
+
+                <!-- Полупрозрачный фон самой карточки -->
+                <Border.Background>
+                    <SolidColorBrush Color="#10FFFFFF"/>
+                </Border.Background>
+
+                <Border.Effect>
+                    <!-- Эффект тени (Neon Glow) -->
+                    <DropShadowEffect BlurRadius="30" ShadowDepth="0" Color="#00d2ff" Opacity="0.3"/>
+                </Border.Effect>
+
+                <Grid>
+                    <StackPanel VerticalAlignment="Center" Margin="40">
+
+                        <!-- ЛОГОТИП (Круг с иконкой) -->
+                        <Border Width="80" Height="80" CornerRadius="40" 
+                                BorderBrush="#00d2ff" BorderThickness="2" Margin="0,0,0,40">
+                            <!-- Иконка шапочки выпускника (для школы) -->
+                            <TextBlock Text="🎓" FontSize="30" Foreground="#00d2ff" 
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="10" Color="#00d2ff" ShadowDepth="0"/>
+                            </Border.Effect>
+                        </Border>
+
+                        <!-- ПОЛЕ: ЛОГИН -->
+                        <Border Style="{StaticResource LoginInputContainerStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="👤" Grid.Column="0" FontSize="16" Foreground="White"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.7"/>
+
+                                <TextBox x:Name="TbLogin"
+                                         Grid.Column="1"
+                                         Style="{StaticResource LoginTextBoxStyle}"
+                                         Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"/>
+
+                                <!-- Плейсхолдер -->
+                                <TextBlock Grid.Column="1" Text="Логин" IsHitTestVisible="False"
+                                           Foreground="#80FFFFFF" VerticalAlignment="Center" Margin="2,0,0,0">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Username}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Username}" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+
+                            </Grid>
+                        </Border>
+
+                        <!-- ПОЛЕ: ПАРОЛЬ -->
+                        <Border Style="{StaticResource LoginInputContainerStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="🔒"
+                                           Grid.Column="0"
+                                           FontSize="16"
+                                           Foreground="White"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Opacity="0.7"/>
+
+                                <PasswordBox x:Name="UserPasswordBox"
+                                             Grid.Column="1"
+                                             Style="{StaticResource LoginPasswordBoxStyle}"
+                                             PasswordChanged="PasswordBox_PasswordChanged"/>
+
+                                <TextBlock x:Name="PasswordPlaceholder"
+                                           Grid.Column="1"
+                                           Text="Пароль"
+                                           IsHitTestVisible="False"
+                                           Foreground="#80FFFFFF"
+                                           VerticalAlignment="Center"
+                                           Margin="2,0,0,0"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- ЧЕКБОКС И ССЫЛКА -->
+                        <Grid Margin="0,0,0,30">
+                            <CheckBox Content="Запомнить меня" Foreground="White" FontSize="12"
+                                      HorizontalAlignment="Left" VerticalContentAlignment="Center"
+                                      Cursor="Hand"
+                                      IsChecked="{Binding RememberMe}">
+                                <CheckBox.Template>
+                                    <ControlTemplate TargetType="CheckBox">
+                                        <StackPanel Orientation="Horizontal">
+                                            <!-- Кастомный квадрат чекбокса -->
+                                            <Border Width="16" Height="16" CornerRadius="3" 
+                                                    BorderBrush="White" BorderThickness="1" 
+                                                    Background="Transparent" Margin="0,0,8,0">
+                                                <!-- Галочка -->
+                                                <Path Data="M 3,8 L 6,11 L 13,3" Stroke="#00d2ff" StrokeThickness="2"
+                                                      Visibility="{Binding IsChecked, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                            </Border>
+                                            <ContentPresenter/>
+                                        </StackPanel>
+                                    </ControlTemplate>
+                                </CheckBox.Template>
+                            </CheckBox>
+
+                            <TextBlock Text="Забыли пароль?" Foreground="White" FontSize="12" 
+                                       HorizontalAlignment="Right" Cursor="Hand" Opacity="0.7" 
+                                       TextDecorations="Underline"/>
+                        </Grid>
+
+                        <!-- КНОПКА ВОЙТИ -->
+                        <Button Content="В О Й Т И" Command="{Binding LoginCommand}" 
+                                CommandParameter="{Binding ElementName=UserPasswordBox}"
+                                Height="45" FontSize="14" FontWeight="Bold"
+                                Foreground="White" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <!-- Фон кнопки с прозрачностью -->
+                                    <Border CornerRadius="5" Background="#25FFFFFF" BorderBrush="#00d2ff" BorderThickness="1">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" Value="#4000d2ff"/>
+                                                        <!-- Подсветка при наведении -->
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
+                        <!-- СООБЩЕНИЕ ОБ ОШИБКЕ -->
+                        <TextBlock Text="{Binding ErrorMessage}" Foreground="#ff6b6b" FontWeight="Bold"
+                                   HorizontalAlignment="Center" Margin="0,15,0,0" FontSize="12"/>
+
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

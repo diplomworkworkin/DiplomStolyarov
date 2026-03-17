@@ -1,0 +1,49 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Основной фон (Светлый градиент) -->
+    <RadialGradientBrush x:Key="WindowBackground" GradientOrigin="0.5,0.0" Center="0.5,0.5" RadiusX="1" RadiusY="1">
+        <GradientStop Color="#FFFFFF" Offset="0"/>
+        <GradientStop Color="#E6E9F0" Offset="1"/>
+    </RadialGradientBrush>
+
+    <!-- Цвета текста (Темные) -->
+    <SolidColorBrush x:Key="PrimaryText" Color="#333333"/>
+    <SolidColorBrush x:Key="SecondaryText" Color="#666666"/>
+
+    <!-- Карточки (Белые, непрозрачные или полупрозрачные) -->
+    <SolidColorBrush x:Key="CardBackground" Color="#80FFFFFF"/>
+    <SolidColorBrush x:Key="CardBorder" Color="#CCCCCC"/>
+
+    <!-- Акцент (Тот же или темнее) -->
+    <SolidColorBrush x:Key="AccentColor" Color="#007ACC"/>
+
+    <!-- Сайдбар (Светло-серый) -->
+    <SolidColorBrush x:Key="SidebarBackground" Color="#FFFFFF"/>
+
+    <!-- Тени -->
+    <Color x:Key="ShadowColor">#CCCCCC</Color>
+
+    <SolidColorBrush x:Key="HoverBackground" Color="#E6F7FF"/>
+    <SolidColorBrush x:Key="SidebarBorder" Color="#E0E0E0"/>
+    <SolidColorBrush x:Key="InputBackground" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="SelectedText" Color="#10212B"/>
+    <Color x:Key="LogoGlowColor">#007ACC</Color>
+
+    <!-- Выпадающие списки (ComboBox Popup) -->
+    <SolidColorBrush x:Key="PopupBackground" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="PopupBorder" Color="#CCCCCC"/>
+    <SolidColorBrush x:Key="PopupItemHoverBackground" Color="#E6F7FF"/>
+
+    <!-- MaterialDesign: привязка базовых кистей к нашей теме -->
+    <SolidColorBrush x:Key="MaterialDesignPaper" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="MaterialDesignCardBackground" Color="#80FFFFFF"/>
+    <SolidColorBrush x:Key="MaterialDesignBody" Color="#333333"/>
+    <SolidColorBrush x:Key="MaterialDesignBodyLight" Color="#666666"/>
+    <SolidColorBrush x:Key="MaterialDesignDivider" Color="#CCCCCC"/>
+    <SolidColorBrush x:Key="MaterialDesignSelection" Color="#007ACC"/>
+    <SolidColorBrush x:Key="MaterialDesignToolForeground" Color="#333333"/>
+    <SolidColorBrush x:Key="MaterialDesignToolBackground" Color="#FFFFFF"/>
+
+
+</ResourceDictionary>
