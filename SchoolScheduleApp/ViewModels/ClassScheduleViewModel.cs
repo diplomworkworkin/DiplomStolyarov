@@ -1,6 +1,7 @@
 using SchoolSchedule.Entites;
 using SchoolScheduleApp.Core;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
@@ -25,6 +26,7 @@ namespace SchoolScheduleApp.ViewModels
 
         private readonly int? _fixedClassId;
         private readonly string _fixedClassName;
+        private readonly IReadOnlyList<FilterOption>? _allowedClasses;
         private bool _isInitializing;
 
         private FilterOption? _selectedDay;
@@ -94,14 +96,26 @@ namespace SchoolScheduleApp.ViewModels
         }
 
         public ClassScheduleViewModel()
-            : this(null, null)
+            : this(null, null, null)
         {
         }
 
         public ClassScheduleViewModel(int? fixedClassId, string? fixedClassName)
+            : this(fixedClassId, fixedClassName, null)
+        {
+        }
+
+        public ClassScheduleViewModel(int? fixedClassId, string? fixedClassName, IReadOnlyList<FilterOption>? allowedClasses)
         {
             _fixedClassId = fixedClassId;
             _fixedClassName = fixedClassName ?? string.Empty;
+            _allowedClasses = allowedClasses?
+                .Where(x => x.Id > 0)
+                .DistinctBy(x => x.Id)
+                .OrderBy(x => x.Name)
+                .Select(x => new FilterOption { Id = x.Id, Name = x.Name })
+                .ToList();
+
             IsClassSelectionEnabled = !_fixedClassId.HasValue;
 
             _isInitializing = true;
@@ -139,19 +153,30 @@ namespace SchoolScheduleApp.ViewModels
         {
             try
             {
-                var classes = SchoolApiClient.GetAcademicClasses()
-                    .OrderBy(x => x.Name)
-                    .ToList();
+                List<FilterOption> classes;
+                if (_allowedClasses != null && _allowedClasses.Count > 0)
+                {
+                    classes = _allowedClasses
+                        .Select(x => new FilterOption { Id = x.Id, Name = x.Name })
+                        .ToList();
+                }
+                else
+                {
+                    classes = SchoolApiClient.GetAcademicClasses()
+                        .OrderBy(x => x.Name)
+                        .Select(x => new FilterOption { Id = x.Id, Name = x.Name })
+                        .ToList();
+                }
 
                 ClassOptions.Clear();
-                if (!_fixedClassId.HasValue)
+                if (!_fixedClassId.HasValue && (_allowedClasses == null || _allowedClasses.Count == 0))
                 {
                     ClassOptions.Add(new FilterOption { Id = 0, Name = "Все классы" });
                 }
 
-                foreach (var cls in classes)
+                foreach (var cls in classes.Where(x => !string.IsNullOrWhiteSpace(x.Name)))
                 {
-                    ClassOptions.Add(new FilterOption { Id = cls.Id, Name = cls.Name });
+                    ClassOptions.Add(cls);
                 }
 
                 if (_fixedClassId.HasValue)
@@ -173,6 +198,14 @@ namespace SchoolScheduleApp.ViewModels
                         SelectedClass = fixedClassOption;
                     }
 
+                    IsClassSelectionEnabled = false;
+                    return;
+                }
+
+                if (_allowedClasses != null && _allowedClasses.Count > 0)
+                {
+                    IsClassSelectionEnabled = _allowedClasses.Count > 1;
+                    SelectedClass = ClassOptions.FirstOrDefault();
                     return;
                 }
 

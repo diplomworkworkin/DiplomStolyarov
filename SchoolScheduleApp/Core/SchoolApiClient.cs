@@ -227,14 +227,18 @@ namespace SchoolScheduleApp.Core
             int? classId = null,
             int? teacherId = null,
             int? dayOfWeek = null,
-            string? weekStartDate = null)
+            string? weekStartDate = null,
+            int? skip = null,
+            int? limit = null)
         {
             var query = BuildQuery("/lessons", new Dictionary<string, object?>
             {
                 ["class_id"] = classId,
                 ["teacher_id"] = teacherId,
                 ["day_of_week"] = dayOfWeek,
-                ["week_start"] = weekStartDate
+                ["week_start"] = weekStartDate,
+                ["skip"] = skip,
+                ["limit"] = limit
             });
             return SendAndRead<List<Lesson>>(HttpMethod.Get, query);
         }

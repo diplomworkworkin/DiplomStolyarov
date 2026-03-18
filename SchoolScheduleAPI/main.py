@@ -167,7 +167,7 @@ def attach_workload_remaining_hours(db: Session, workloads: List[Workload]) -> N
         workload.RemainingHours = max(0, year_hours - used_hours)
 
 
-def validate_curator_uniqueness(
+def validate_curator_assignment_limit(
     db: Session, curator_teacher_id: Optional[int], current_class_id: Optional[int] = None
 ) -> None:
     if curator_teacher_id is None:
@@ -181,11 +181,11 @@ def validate_curator_uniqueness(
     if current_class_id is not None:
         query = query.filter(AcademicClass.Id != current_class_id)
 
-    existing = query.first()
-    if existing is not None:
+    assigned_classes_count = query.count()
+    if assigned_classes_count >= 2:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="This teacher is already a curator of another class",
+            detail="This teacher is already a curator of two classes",
         )
 
 
@@ -393,7 +393,7 @@ def read_class(class_id: int, db: Session = Depends(get_db)):
     "/classes", response_model=schemas.AcademicClass, status_code=status.HTTP_201_CREATED
 )
 def create_class(academic_class: schemas.AcademicClassCreate, db: Session = Depends(get_db)):
-    validate_curator_uniqueness(db, academic_class.CuratorTeacherId)
+    validate_curator_assignment_limit(db, academic_class.CuratorTeacherId)
 
     db_class = AcademicClass(**academic_class.model_dump())
     db.add(db_class)
@@ -412,7 +412,7 @@ def update_class(
     payload = academic_class.model_dump(exclude_unset=True)
 
     if "CuratorTeacherId" in payload:
-        validate_curator_uniqueness(db, payload["CuratorTeacherId"], class_id)
+        validate_curator_assignment_limit(db, payload["CuratorTeacherId"], class_id)
 
     for field, value in payload.items():
         setattr(db_class, field, value)

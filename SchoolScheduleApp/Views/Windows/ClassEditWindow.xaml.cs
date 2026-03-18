@@ -29,13 +29,13 @@ namespace SchoolScheduleApp.Views.Windows
             var currentClassId = AcademicClass.Id;
 
             var classes = SchoolApiClient.GetAcademicClasses();
-            var busyTeacherIds = classes
-                .Where(c => c.CuratorTeacherId != null && c.Id != currentClassId)
-                .Select(c => c.CuratorTeacherId!.Value)
-                .ToHashSet();
+            var curatorCounts = classes
+                .Where(c => c.CuratorTeacherId.HasValue && c.Id != currentClassId)
+                .GroupBy(c => c.CuratorTeacherId!.Value)
+                .ToDictionary(g => g.Key, g => g.Count());
 
             var teachers = SchoolApiClient.GetTeachers()
-                .Where(t => !busyTeacherIds.Contains(t.Id))
+                .Where(t => !curatorCounts.TryGetValue(t.Id, out var count) || count < 2)
                 .OrderBy(t => t.FullName)
                 .ToList();
 

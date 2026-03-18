@@ -38,7 +38,7 @@ class AcademicClass(Base):
     Name = Column(String(50), nullable=False)
     StudentCount = Column(Integer)
     Shift = Column(Integer)
-    CuratorTeacherId = Column(Integer, ForeignKey("Teachers.Id", ondelete="SET NULL"), unique=True)
+    CuratorTeacherId = Column(Integer, ForeignKey("Teachers.Id", ondelete="SET NULL"))
     
     CuratorTeacher = relationship("Teacher")
 

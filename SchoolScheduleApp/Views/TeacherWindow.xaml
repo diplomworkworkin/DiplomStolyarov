@@ -53,7 +53,7 @@
                     <TextBlock Text="МОЁ РАСПИСАНИЕ" Foreground="{DynamicResource SecondaryText}" FontSize="10" Margin="30,0,0,10" FontWeight="Bold"/>
                     <Button Content="📅   Моё расписание" Style="{StaticResource MenuButton}" Click="BtnSchedule_Click"/>
                     <Button x:Name="BtnCuratorClassSchedule"
-                            Content="🏫   Расписание класса"
+                            Content="🏫   Расписание курируемого класса"
                             Style="{StaticResource MenuButton}"
                             Click="BtnCuratorClassSchedule_Click"
                             Visibility="Collapsed"/>

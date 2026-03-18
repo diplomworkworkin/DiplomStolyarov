@@ -252,9 +252,7 @@
                                 </CheckBox.Template>
                             </CheckBox>
 
-                            <TextBlock Text="Забыли пароль?" Foreground="White" FontSize="12" 
-                                       HorizontalAlignment="Right" Cursor="Hand" Opacity="0.7" 
-                                       TextDecorations="Underline"/>
+                            
                         </Grid>
 
                         <!-- КНОПКА ВОЙТИ -->

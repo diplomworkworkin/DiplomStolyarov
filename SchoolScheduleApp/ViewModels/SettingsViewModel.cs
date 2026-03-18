@@ -14,7 +14,6 @@ namespace SchoolScheduleApp.ViewModels
     {
         private readonly AppSettings _settings;
         private readonly UserRole _currentRole;
-        private int? _curatorClassId;
 
         public SettingsViewModel()
         {
@@ -145,52 +144,39 @@ namespace SchoolScheduleApp.ViewModels
                 Id = 0,
                 Name = "Моё расписание"
             });
-
-            if (TryGetCuratorClass(out var classId, out var className))
+            var curatorClasses = GetCuratorClasses();
+            for (var i = 0; i < curatorClasses.Count; i++)
             {
-                _curatorClassId = classId;
                 ExportScopeOptions.Add(new ExportScopeOption
                 {
-                    Id = 1,
-                    Name = $"Расписание класса {className}",
-                    AcademicClassId = classId
+                    Id = i + 1,
+                    Name = $"Расписание класса {curatorClasses[i].Name}",
+                    AcademicClassId = curatorClasses[i].Id
                 });
-            }
-            else
-            {
-                _curatorClassId = null;
             }
 
             SelectedExportScope = ExportScopeOptions.FirstOrDefault();
         }
 
-        private static bool TryGetCuratorClass(out int classId, out string className)
+        private static List<AcademicClass> GetCuratorClasses()
         {
-            classId = 0;
-            className = string.Empty;
-
             var teacherId = UserSession.CurrentUser?.TeacherId;
             if (!teacherId.HasValue)
             {
-                return false;
+                return [];
             }
 
             try
             {
-                var curatorClass = SchoolApiClient.GetAcademicClasses()
-                    .FirstOrDefault(x => x.CuratorTeacherId == teacherId.Value);
-                if (curatorClass == null)
-                {
-                    return false;
-                }
-
-                classId = curatorClass.Id;
-                className = curatorClass.Name ?? string.Empty;
-                return true;
+                return SchoolApiClient.GetAcademicClasses()
+                    .Where(x => x.CuratorTeacherId == teacherId.Value)
+                    .OrderBy(x => x.Name)
+                    .Take(2)
+                    .ToList();
             }
             catch
             {
-                return false;
+                return [];
             }
         }
 
@@ -332,8 +318,7 @@ namespace SchoolScheduleApp.ViewModels
             var weekStartDate = AcademicWeekHelper.GetWeekStartKey(weekOffset);
             var weekRange = AcademicWeekHelper.GetWeekRange(weekOffset);
             periodText = $"{weekRange.Monday:dd.MM.yyyy} - {weekRange.Friday:dd.MM.yyyy}";
-
-            var lessons = SchoolApiClient.GetLessons(weekStartDate: weekStartDate);
+            List<Lesson> lessons;
 
             if (_currentRole == UserRole.Teacher)
             {
@@ -343,17 +328,26 @@ namespace SchoolScheduleApp.ViewModels
                     return [];
                 }
 
-                var scope = SelectedExportScope?.Id ?? 0;
-                var curatorClassId = SelectedExportScope?.AcademicClassId ?? _curatorClassId;
-
-                if (scope == 1 && curatorClassId.HasValue)
+                if (SelectedExportScope?.AcademicClassId is int curatorClassId)
                 {
-                    lessons = lessons.Where(x => x.AcademicClassId == curatorClassId.Value).ToList();
+                    lessons = SchoolApiClient.GetLessons(
+                        classId: curatorClassId,
+                        weekStartDate: weekStartDate,
+                        limit: 1000);
                 }
                 else
                 {
-                    lessons = lessons.Where(x => x.TeacherId == teacherId.Value).ToList();
+                    lessons = SchoolApiClient.GetLessons(
+                        teacherId: teacherId.Value,
+                        weekStartDate: weekStartDate,
+                        limit: 1000);
                 }
+            }
+            else
+            {
+                lessons = SchoolApiClient.GetLessons(
+                    weekStartDate: weekStartDate,
+                    limit: 5000);
             }
 
             return lessons

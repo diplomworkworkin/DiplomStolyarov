@@ -82,9 +82,33 @@
                             Padding="14,12"
                             BorderBrush="{DynamicResource CardBorder}"
                             BorderThickness="0,0,0,1">
-                        <TextBlock Text="Диалоги"
-                                   FontWeight="Bold"
-                                   Foreground="{DynamicResource PrimaryText}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0"
+                                       Text="Диалоги"
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource PrimaryText}"/>
+
+                            <Button Grid.Column="1"
+                                    Height="28"
+                                    Command="{Binding ClearConversationsCommand}"
+                                    Background="Transparent"
+                                    BorderBrush="{DynamicResource CardBorder}"
+                                    BorderThickness="1"
+                                    Cursor="Hand"
+                                    ToolTip="Очистить диалоги">
+                                <TextBlock Text="🗑"
+                                           FontSize="13"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Foreground="{DynamicResource SecondaryText}"/>
+                            </Button>
+                        </Grid>
                     </Border>
 
                     <ListBox Grid.Row="1"

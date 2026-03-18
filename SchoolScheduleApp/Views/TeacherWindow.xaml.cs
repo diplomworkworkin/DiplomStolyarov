@@ -1,6 +1,8 @@
-﻿using SchoolScheduleApp.Core;
+using SchoolScheduleApp.Core;
+using SchoolScheduleApp.ViewModels;
 using SchoolScheduleApp.Views.Pages;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -14,8 +16,13 @@ namespace SchoolScheduleApp.Views
     public partial class TeacherWindow : Window
     {
         private readonly DispatcherTimer _messagesTimer;
-        private int? _curatorClassId;
-        private string _curatorClassName = string.Empty;
+        private readonly List<FilterOption> _curatorClasses = new();
+
+        private const string MyScheduleTitle = "\u041C\u043E\u0451 \u0440\u0430\u0441\u043F\u0438\u0441\u0430\u043D\u0438\u0435";
+        private const string ClassScheduleBaseTitle = "\u0420\u0430\u0441\u043F\u0438\u0441\u0430\u043D\u0438\u0435 \u043A\u043B\u0430\u0441\u0441\u0430";
+        private const string MessagesTitle = "\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F";
+        private const string MessagesMenuPrefix = "\u2709\uFE0F   ";
+        private const string SettingsTitle = "\u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438";
 
         public TeacherWindow()
         {
@@ -23,12 +30,14 @@ namespace SchoolScheduleApp.Views
             ConfigureCuratorClassNavigation();
 
             MainFrame.Navigated += MainFrame_Navigated;
-            NavigateTo(new TeacherSchedulePage(), "Моё расписание");
+            NavigateTo(new TeacherSchedulePage(), MyScheduleTitle);
 
             MouseDown += (_, e) =>
             {
                 if (e.LeftButton == MouseButtonState.Pressed)
+                {
                     DragMove();
+                }
             };
 
             Activated += (_, _) => UpdateMessagesBadge();
@@ -45,7 +54,10 @@ namespace SchoolScheduleApp.Views
 
         private void MainFrame_Navigated(object sender, NavigationEventArgs e)
         {
-            if (e.Content is not Page page) return;
+            if (e.Content is not Page page)
+            {
+                return;
+            }
 
             page.Opacity = 0;
             var anim = new DoubleAnimation
@@ -67,28 +79,29 @@ namespace SchoolScheduleApp.Views
         }
 
         private void BtnSchedule_Click(object sender, RoutedEventArgs e)
-            => NavigateTo(new TeacherSchedulePage(), "Моё расписание");
+            => NavigateTo(new TeacherSchedulePage(), MyScheduleTitle);
 
         private void BtnCuratorClassSchedule_Click(object sender, RoutedEventArgs e)
         {
-            if (!_curatorClassId.HasValue)
+            if (_curatorClasses.Count == 0)
             {
-                ToastService.Show("Вы не назначены классным руководителем.", "Расписание класса", true);
+                ToastService.Show(
+                    "\u0412\u044B \u043D\u0435 \u043D\u0430\u0437\u043D\u0430\u0447\u0435\u043D\u044B \u043A\u043B\u0430\u0441\u0441\u043D\u044B\u043C \u0440\u0443\u043A\u043E\u0432\u043E\u0434\u0438\u0442\u0435\u043B\u0435\u043C.",
+                    ClassScheduleBaseTitle,
+                    true);
                 return;
             }
 
-            var title = string.IsNullOrWhiteSpace(_curatorClassName)
-                ? "Расписание класса"
-                : $"Расписание класса {_curatorClassName}";
+            var title = ClassScheduleBaseTitle;
 
-            NavigateTo(new ClassSchedulePage(_curatorClassId.Value, _curatorClassName), title);
+            NavigateTo(new ClassSchedulePage(null, null, _curatorClasses), title);
         }
 
         private void BtnMessages_Click(object sender, RoutedEventArgs e)
-            => NavigateTo(new MessagesPage(), "Сообщения");
+            => NavigateTo(new MessagesPage(), MessagesTitle);
 
         private void BtnSettings_Click(object sender, RoutedEventArgs e)
-            => NavigateTo(new SettingsPage(), "Настройки");
+            => NavigateTo(new SettingsPage(), SettingsTitle);
 
         private void BtnClose_Click(object sender, RoutedEventArgs e)
             => Application.Current.Shutdown();
@@ -133,15 +146,14 @@ namespace SchoolScheduleApp.Views
                 : 0;
 
             BtnMessages.Content = unread > 0
-                ? $"✉️   Сообщения ({unread})"
-                : "✉️   Сообщения";
+                ? $"{MessagesMenuPrefix}{MessagesTitle} ({unread})"
+                : $"{MessagesMenuPrefix}{MessagesTitle}";
         }
 
         private void ConfigureCuratorClassNavigation()
         {
             BtnCuratorClassSchedule.Visibility = Visibility.Collapsed;
-            _curatorClassId = null;
-            _curatorClassName = string.Empty;
+            _curatorClasses.Clear();
 
             var teacherId = UserSession.CurrentUser?.TeacherId;
             if (!teacherId.HasValue)
@@ -151,21 +163,27 @@ namespace SchoolScheduleApp.Views
 
             try
             {
-                var curatorClass = SchoolApiClient.GetAcademicClasses()
+                var curatorClasses = SchoolApiClient.GetAcademicClasses()
                     .OrderBy(x => x.Name)
-                    .FirstOrDefault(x => x.CuratorTeacherId == teacherId.Value);
+                    .Where(x => x.CuratorTeacherId == teacherId.Value)
+                    .Take(2)
+                    .ToList();
 
-                if (curatorClass == null)
+                if (curatorClasses.Count == 0)
                 {
                     return;
                 }
 
-                _curatorClassId = curatorClass.Id;
-                _curatorClassName = curatorClass.Name ?? string.Empty;
+                foreach (var item in curatorClasses)
+                {
+                    _curatorClasses.Add(new FilterOption
+                    {
+                        Id = item.Id,
+                        Name = item.Name ?? string.Empty
+                    });
+                }
 
-                BtnCuratorClassSchedule.Content = string.IsNullOrWhiteSpace(_curatorClassName)
-                    ? "🏫   Расписание класса"
-                    : $"🏫   Расписание класса {_curatorClassName}";
+                BtnCuratorClassSchedule.Content = "\U0001F3EB   \u0420\u0430\u0441\u043F\u0438\u0441\u0430\u043D\u0438\u0435 \u043A\u043B\u0430\u0441\u0441\u0430";
                 BtnCuratorClassSchedule.Visibility = Visibility.Visible;
             }
             catch (Exception ex)

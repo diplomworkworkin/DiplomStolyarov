@@ -1,5 +1,6 @@
 using SchoolSchedule.Entites;
 using SchoolScheduleApp.Core;
+using SchoolScheduleApp.Views.Windows;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -205,6 +206,7 @@ namespace SchoolScheduleApp.ViewModels
 
         public bool CanSendInChat => SelectedConversation != null;
         public bool CanModerate => IsAdmin && SelectedConversation != null && SelectedConversation.Status == MessageStatus.Pending;
+        public bool CanClearConversations => Conversations.Count > 0;
 
         public RelayCommand RefreshCommand { get; }
         public RelayCommand ToggleComposerCommand { get; }
@@ -212,6 +214,7 @@ namespace SchoolScheduleApp.ViewModels
         public RelayCommand SendChatMessageCommand { get; }
         public RelayCommand ApproveCommand { get; }
         public RelayCommand RejectCommand { get; }
+        public RelayCommand ClearConversationsCommand { get; }
 
         public MessagesViewModel()
         {
@@ -221,6 +224,7 @@ namespace SchoolScheduleApp.ViewModels
             SendChatMessageCommand = new RelayCommand(_ => SendChatMessage());
             ApproveCommand = new RelayCommand(_ => ProcessRequest(true));
             RejectCommand = new RelayCommand(_ => ProcessRequest(false));
+            ClearConversationsCommand = new RelayCommand(_ => ClearConversations(), _ => CanClearConversations);
 
             SelectedCategoryOption = Categories.FirstOrDefault();
             SelectedReplacementModeOption = ReplacementModes.FirstOrDefault();
@@ -568,6 +572,55 @@ namespace SchoolScheduleApp.ViewModels
             SelectedConversation = selectId.HasValue
                 ? Conversations.FirstOrDefault(x => x.Id == selectId.Value)
                 : Conversations.FirstOrDefault();
+
+            OnPropertyChanged(nameof(CanClearConversations));
+        }
+
+        private void ClearConversations()
+        {
+            var ids = Conversations.Select(x => x.Id).ToList();
+            if (ids.Count == 0)
+            {
+                return;
+            }
+
+            var owner = Application.Current?.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
+                ?? Application.Current?.MainWindow;
+            var picker = new ClearDialogsWindow(allowDeleteForEveryone: true)
+            {
+                Owner = owner
+            };
+
+            if (picker.ShowDialog() != true || picker.Result == ClearDialogsMode.Cancel)
+            {
+                return;
+            }
+
+            try
+            {
+                var removed = picker.Result switch
+                {
+                    ClearDialogsMode.DeleteForEveryone => MessageRequestService.DeleteThreads(ids),
+                    ClearDialogsMode.DeleteForMe when IsAdmin => MessageRequestService.DeleteThreadsForAdmin(ids),
+                    ClearDialogsMode.DeleteForMe when IsTeacher && UserSession.CurrentUser?.TeacherId is int teacherId => MessageRequestService.DeleteThreadsForTeacher(teacherId, ids),
+                    _ => 0
+                };
+
+                if (removed <= 0)
+                {
+                    ToastService.Show("Диалоги не найдены для очистки.", "Сообщения");
+                    return;
+                }
+
+                SelectedConversation = null;
+                ChatMessages.Clear();
+                LoadConversations();
+                ToastService.Show($"Удалено диалогов: {removed}.", "Сообщения");
+            }
+            catch (Exception ex)
+            {
+                ToastService.Show("Не удалось очистить диалоги: " + ex.Message, "Ошибка", true);
+            }
         }
 
         private void LoadSelectedConversationMessages()

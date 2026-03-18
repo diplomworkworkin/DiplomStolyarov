@@ -295,8 +295,7 @@ namespace SchoolScheduleApp.Core
                 if (ownRoom != null)
                 {
                     var ownRoomKey = $"{ownRoom.Id}-{day}-{idx}";
-                    var roomFits = ownRoom.Capacity <= 0 || students <= 0 || ownRoom.Capacity >= students;
-                    if (roomFits && !busyRoom.Contains(ownRoomKey))
+                    if (!busyRoom.Contains(ownRoomKey))
                     {
                         return ownRoom.Id;
                     }

@@ -55,6 +55,8 @@ namespace SchoolScheduleApp.Core
 
         public bool IsReadByAdmin { get; set; }
         public bool IsReadByTeacher { get; set; }
+        public bool IsDeletedForAdmin { get; set; }
+        public bool IsDeletedForTeacher { get; set; }
 
         public List<ChatMessage> Messages { get; set; } = new();
     }
@@ -70,7 +72,10 @@ namespace SchoolScheduleApp.Core
         {
             lock (Locker)
             {
-                return LoadUnsafe().OrderByDescending(x => x.UpdatedAt).ToList();
+                return LoadUnsafe()
+                    .Where(x => !x.IsDeletedForAdmin)
+                    .OrderByDescending(x => x.UpdatedAt)
+                    .ToList();
             }
         }
 
@@ -79,7 +84,7 @@ namespace SchoolScheduleApp.Core
             lock (Locker)
             {
                 return LoadUnsafe()
-                    .Where(x => x.TeacherId == teacherId)
+                    .Where(x => x.TeacherId == teacherId && !x.IsDeletedForTeacher)
                     .OrderByDescending(x => x.UpdatedAt)
                     .ToList();
             }
@@ -89,7 +94,7 @@ namespace SchoolScheduleApp.Core
         {
             lock (Locker)
             {
-                return LoadUnsafe().Count(x => !x.IsReadByAdmin);
+                return LoadUnsafe().Count(x => !x.IsReadByAdmin && !x.IsDeletedForAdmin);
             }
         }
 
@@ -97,7 +102,7 @@ namespace SchoolScheduleApp.Core
         {
             lock (Locker)
             {
-                return LoadUnsafe().Count(x => x.TeacherId == teacherId && !x.IsReadByTeacher);
+                return LoadUnsafe().Count(x => x.TeacherId == teacherId && !x.IsReadByTeacher && !x.IsDeletedForTeacher);
             }
         }
 
@@ -108,7 +113,7 @@ namespace SchoolScheduleApp.Core
                 var items = LoadUnsafe();
                 var changed = false;
 
-                foreach (var item in items.Where(x => !x.IsReadByAdmin))
+                foreach (var item in items.Where(x => !x.IsReadByAdmin && !x.IsDeletedForAdmin))
                 {
                     item.IsReadByAdmin = true;
                     changed = true;
@@ -128,7 +133,7 @@ namespace SchoolScheduleApp.Core
                 var items = LoadUnsafe();
                 var changed = false;
 
-                foreach (var item in items.Where(x => x.TeacherId == teacherId && !x.IsReadByTeacher))
+                foreach (var item in items.Where(x => x.TeacherId == teacherId && !x.IsReadByTeacher && !x.IsDeletedForTeacher))
                 {
                     item.IsReadByTeacher = true;
                     changed = true;
@@ -229,6 +234,7 @@ namespace SchoolScheduleApp.Core
                 thread.UpdatedAt = DateTime.Now;
                 thread.IsReadByAdmin = false;
                 thread.IsReadByTeacher = true;
+                thread.IsDeletedForAdmin = false;
                 SaveUnsafe(items);
                 return true;
             }
@@ -261,6 +267,7 @@ namespace SchoolScheduleApp.Core
                 thread.UpdatedAt = DateTime.Now;
                 thread.IsReadByAdmin = true;
                 thread.IsReadByTeacher = false;
+                thread.IsDeletedForTeacher = false;
                 SaveUnsafe(items);
                 return true;
             }
@@ -281,8 +288,91 @@ namespace SchoolScheduleApp.Core
                 thread.UpdatedAt = DateTime.Now;
                 thread.IsReadByAdmin = true;
                 thread.IsReadByTeacher = false;
+                thread.IsDeletedForTeacher = false;
                 SaveUnsafe(items);
                 return true;
+            }
+        }
+
+        public static int DeleteThreads(IEnumerable<Guid> threadIds)
+        {
+            var ids = threadIds?.ToHashSet() ?? new HashSet<Guid>();
+            if (ids.Count == 0)
+            {
+                return 0;
+            }
+
+            lock (Locker)
+            {
+                var items = LoadUnsafe();
+                var before = items.Count;
+                items.RemoveAll(x => ids.Contains(x.Id));
+                var removed = before - items.Count;
+
+                if (removed > 0)
+                {
+                    SaveUnsafe(items);
+                }
+
+                return removed;
+            }
+        }
+
+        public static int DeleteThreadsForTeacher(int teacherId, IEnumerable<Guid> threadIds)
+        {
+            var ids = threadIds?.ToHashSet() ?? new HashSet<Guid>();
+            if (ids.Count == 0)
+            {
+                return 0;
+            }
+
+            lock (Locker)
+            {
+                var items = LoadUnsafe();
+                var affected = 0;
+                foreach (var thread in items.Where(x => x.TeacherId == teacherId && ids.Contains(x.Id) && !x.IsDeletedForTeacher))
+                {
+                    thread.IsDeletedForTeacher = true;
+                    affected++;
+                }
+
+                if (affected == 0)
+                {
+                    return 0;
+                }
+
+                items.RemoveAll(x => x.IsDeletedForTeacher && x.IsDeletedForAdmin);
+                SaveUnsafe(items);
+                return affected;
+            }
+        }
+
+        public static int DeleteThreadsForAdmin(IEnumerable<Guid> threadIds)
+        {
+            var ids = threadIds?.ToHashSet() ?? new HashSet<Guid>();
+            if (ids.Count == 0)
+            {
+                return 0;
+            }
+
+            lock (Locker)
+            {
+                var items = LoadUnsafe();
+                var affected = 0;
+                foreach (var thread in items.Where(x => ids.Contains(x.Id) && !x.IsDeletedForAdmin))
+                {
+                    thread.IsDeletedForAdmin = true;
+                    affected++;
+                }
+
+                if (affected == 0)
+                {
+                    return 0;
+                }
+
+                items.RemoveAll(x => x.IsDeletedForTeacher && x.IsDeletedForAdmin);
+                SaveUnsafe(items);
+                return affected;
             }
         }
 

@@ -207,6 +207,87 @@ def _ensure_workloads_year_hours_schema() -> None:
         raw.close()
 
 
+def _has_unique_curator_teacher_constraint(cursor) -> bool:
+    cursor.execute("PRAGMA index_list('AcademicClasses')")
+    indexes = cursor.fetchall()
+
+    for index in indexes:
+        unique = index[2] if len(index) > 2 else 0
+        if unique != 1:
+            continue
+
+        index_name = index[1]
+        cursor.execute(f"PRAGMA index_info('{index_name}')")
+        index_columns = [row[2] for row in cursor.fetchall()]
+        if index_columns == ["CuratorTeacherId"]:
+            return True
+
+    return False
+
+
+def _rebuild_academic_classes_for_curator_limit() -> None:
+    raw = engine.raw_connection()
+    cursor = raw.cursor()
+
+    try:
+        cursor.execute("PRAGMA foreign_keys=OFF")
+        cursor.execute("BEGIN")
+
+        cursor.execute(
+            """
+            CREATE TABLE AcademicClasses_new (
+                Id INTEGER NOT NULL PRIMARY KEY,
+                Name VARCHAR(50) NOT NULL,
+                StudentCount INTEGER,
+                Shift INTEGER,
+                CuratorTeacherId INTEGER REFERENCES Teachers (Id) ON DELETE SET NULL
+            )
+            """
+        )
+
+        cursor.execute(
+            """
+            INSERT INTO AcademicClasses_new (Id, Name, StudentCount, Shift, CuratorTeacherId)
+            SELECT Id, Name, StudentCount, Shift, CuratorTeacherId
+            FROM AcademicClasses
+            """
+        )
+
+        cursor.execute("DROP TABLE AcademicClasses")
+        cursor.execute("ALTER TABLE AcademicClasses_new RENAME TO AcademicClasses")
+        cursor.execute("CREATE INDEX IF NOT EXISTS ix_AcademicClasses_Id ON AcademicClasses (Id)")
+
+        cursor.execute("COMMIT")
+    except Exception:
+        cursor.execute("ROLLBACK")
+        raise
+    finally:
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
+        raw.close()
+
+
+def _ensure_curator_teacher_limit_schema() -> None:
+    if not SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
+        return
+
+    raw = engine.raw_connection()
+    cursor = raw.cursor()
+    try:
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='AcademicClasses'")
+        exists = cursor.fetchone() is not None
+        if not exists:
+            return
+
+        if not _has_unique_curator_teacher_constraint(cursor):
+            return
+    finally:
+        cursor.close()
+        raw.close()
+
+    _rebuild_academic_classes_for_curator_limit()
+
+
 def init_db() -> None:
     from app.core.seed import seed_database
     from app.models.database import Base
@@ -214,6 +295,7 @@ def init_db() -> None:
     Base.metadata.create_all(bind=engine)
     _ensure_lessons_week_schema()
     _ensure_workloads_year_hours_schema()
+    _ensure_curator_teacher_limit_schema()
     with SessionLocal() as db:
         seed_database(db)
 
