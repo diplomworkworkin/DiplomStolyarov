@@ -6,6 +6,7 @@ import os
 
 from sqlalchemy.orm import Session
 
+from app.core.security import hash_password
 from app.models.database import (
     AcademicClass,
     Classroom,
@@ -362,14 +363,14 @@ def ensure_users(db: Session) -> None:
     if admin is None:
         admin = User(
             Username="admin",
-            Password="admin",
+            Password=hash_password("admin"),
             FullName="Администратор",
             Role=int(UserRole.Admin),
         )
         db.add(admin)
     else:
         admin.Username = "admin"
-        admin.Password = "admin"
+        admin.Password = hash_password("admin")
         admin.FullName = "Администратор"
         admin.Role = int(UserRole.Admin)
         admin.TeacherId = None
@@ -391,7 +392,7 @@ def ensure_users(db: Session) -> None:
         if user is None:
             user = User(
                 Username=f"teacher{teacher.Id}",
-                Password=f"teacher{teacher.Id}",
+                Password=hash_password(f"teacher{teacher.Id}"),
                 FullName=teacher.FullName,
                 Role=int(UserRole.Teacher),
                 TeacherId=teacher.Id,
@@ -400,7 +401,7 @@ def ensure_users(db: Session) -> None:
             users.append(user)
         else:
             user.Username = f"teacher{teacher.Id}"
-            user.Password = f"teacher{teacher.Id}"
+            user.Password = hash_password(f"teacher{teacher.Id}")
             user.FullName = teacher.FullName
             user.Role = int(UserRole.Teacher)
             user.TeacherId = teacher.Id
@@ -411,7 +412,7 @@ def ensure_users(db: Session) -> None:
         fallback_teacher = all_teachers[0]
         fallback_user = User(
             Username="teacher1",
-            Password="teacher1",
+            Password=hash_password("teacher1"),
             FullName=fallback_teacher.FullName,
             Role=int(UserRole.Teacher),
             TeacherId=fallback_teacher.Id,

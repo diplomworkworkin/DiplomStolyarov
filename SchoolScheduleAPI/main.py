@@ -9,6 +9,7 @@ from sqlalchemy import func, tuple_
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db, init_db
+from app.core.security import hash_password, is_password_hashed, verify_password
 from app.models.database import (
     AcademicClass,
     Classroom,
@@ -201,16 +202,19 @@ def read_health():
 
 @app.post("/auth/login", response_model=schemas.User)
 def login(payload: LoginRequest, db: Session = Depends(get_db)):
-    user = (
-        db.query(User)
-        .filter(User.Username == payload.Username, User.Password == payload.Password)
-        .first()
-    )
-    if user is None:
+    user = db.query(User).filter(User.Username == payload.Username).first()
+    if user is None or not verify_password(payload.Password, user.Password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password",
         )
+
+    # Lazy migration: upgrade legacy plaintext passwords to PBKDF2 on successful login.
+    if not is_password_hashed(user.Password):
+        user.Password = hash_password(payload.Password)
+        db.commit()
+        db.refresh(user)
+
     return user
 
 
@@ -652,7 +656,9 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
         db, teacher_id=user.TeacherId, class_id=user.AcademicClassId
     )
 
-    db_user = User(**user.model_dump())
+    payload = user.model_dump()
+    payload["Password"] = hash_password(payload["Password"])
+    db_user = User(**payload)
     db.add(db_user)
     commit_session(db, "Failed to create user due to a data conflict")
     db.refresh(db_user)
@@ -670,6 +676,13 @@ def update_user(user_id: int, user: schemas.UserUpdate, db: Session = Depends(ge
     ensure_foreign_keys_exist(
         db, teacher_id=payload.get("TeacherId"), class_id=payload.get("AcademicClassId")
     )
+
+    if "Password" in payload:
+        incoming_password = payload.get("Password")
+        if incoming_password is None or not str(incoming_password).strip():
+            payload.pop("Password", None)
+        else:
+            payload["Password"] = hash_password(str(incoming_password))
 
     for field, value in payload.items():
         setattr(db_user, field, value)

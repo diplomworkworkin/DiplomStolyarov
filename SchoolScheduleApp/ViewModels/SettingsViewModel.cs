@@ -4,6 +4,7 @@ using SchoolScheduleApp.Core;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -36,6 +37,7 @@ namespace SchoolScheduleApp.ViewModels
 
             SaveCommand = new RelayCommand(_ => ExecuteSave());
             BackupCommand = new RelayCommand(_ => ExecuteApiCheck());
+            BackupDatabaseCommand = new RelayCommand(_ => ExecuteDatabaseBackup(), _ => CanManageAcademicSettings);
             ExportCsvCommand = new RelayCommand(_ => ExecuteExportCsv(), _ => CanExportSchedule);
             ExportWordCommand = new RelayCommand(_ => ExecuteExportWord(), _ => CanExportSchedule);
         }
@@ -98,6 +100,7 @@ namespace SchoolScheduleApp.ViewModels
 
         public RelayCommand SaveCommand { get; }
         public RelayCommand BackupCommand { get; }
+        public RelayCommand BackupDatabaseCommand { get; }
         public RelayCommand ExportCsvCommand { get; }
         public RelayCommand ExportWordCommand { get; }
 
@@ -247,6 +250,58 @@ namespace SchoolScheduleApp.ViewModels
             {
                 ToastService.Show("Ошибка проверки API: " + ex.Message, "Проверка API", true);
             }
+        }
+
+        private void ExecuteDatabaseBackup()
+        {
+            try
+            {
+                var sourceDbPath = ResolveDatabasePath();
+                if (string.IsNullOrWhiteSpace(sourceDbPath) || !File.Exists(sourceDbPath))
+                {
+                    ToastService.Show("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043D\u0430\u0439\u0442\u0438 \u0444\u0430\u0439\u043B \u0431\u0430\u0437\u044B school_schedule.db.", "\u0411\u044D\u043A\u0430\u043F \u0411\u0414", true);
+                    return;
+                }
+
+                var saveDialog = new SaveFileDialog
+                {
+                    Filter = "SQLite DB (*.db)|*.db|All files (*.*)|*.*",
+                    FileName = $"school_schedule_backup_{DateTime.Now.ToString("yyyyMMdd_HHmmss", CultureInfo.InvariantCulture)}.db",
+                    OverwritePrompt = true
+                };
+
+                if (saveDialog.ShowDialog() != true)
+                {
+                    return;
+                }
+
+                File.Copy(sourceDbPath, saveDialog.FileName, true);
+                ToastService.Show($"\u0411\u044D\u043A\u0430\u043F \u0441\u043E\u0437\u0434\u0430\u043D: {saveDialog.FileName}", "\u0411\u044D\u043A\u0430\u043F \u0411\u0414");
+            }
+            catch (Exception ex)
+            {
+                ToastService.Show("\u041E\u0448\u0438\u0431\u043A\u0430 \u0431\u044D\u043A\u0430\u043F\u0430 \u0411\u0414: " + ex.Message, "\u0411\u044D\u043A\u0430\u043F \u0411\u0414", true);
+            }
+        }
+
+        private static string ResolveDatabasePath()
+        {
+            var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            var candidates = new List<string>
+            {
+                Path.Combine(baseDir, "school_schedule.db"),
+                Path.Combine(baseDir, "SchoolScheduleAPI", "school_schedule.db")
+            };
+
+            var directory = new DirectoryInfo(baseDir);
+            for (var i = 0; i < 8 && directory is not null; i++)
+            {
+                candidates.Add(Path.Combine(directory.FullName, "SchoolScheduleAPI", "school_schedule.db"));
+                candidates.Add(Path.Combine(directory.FullName, "school_schedule.db"));
+                directory = directory.Parent;
+            }
+
+            return candidates.FirstOrDefault(File.Exists) ?? string.Empty;
         }
 
         private void ExecuteExportCsv()

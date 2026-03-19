@@ -179,6 +179,31 @@
                 </Border>
 
                 <Border Style="{StaticResource GlassCard}" Padding="20" Margin="0,0,0,20"
+                        Visibility="{Binding CanManageAcademicSettings, Converter={StaticResource BoolToVisibility}}">
+                    <Grid>
+                        <StackPanel>
+                            <TextBlock Text="Резервная копия базы данных" Foreground="{DynamicResource AccentColor}" FontWeight="Bold" FontSize="16"/>
+                            <TextBlock Text="Создать файл бэкапа school_schedule.db" Foreground="{DynamicResource SecondaryText}" FontSize="12" Margin="0,6,0,0"/>
+                        </StackPanel>
+                        <Button Content="Бэкап БД"
+                                Command="{Binding BackupDatabaseCommand}"
+                                HorizontalAlignment="Right"
+                                Background="Transparent"
+                                Foreground="{DynamicResource AccentColor}"
+                                BorderBrush="{DynamicResource AccentColor}"
+                                BorderThickness="1"
+                                Padding="15,8"
+                                Cursor="Hand">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="5"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource GlassCard}" Padding="20" Margin="0,0,0,20"
                         Visibility="{Binding CanExportSchedule, Converter={StaticResource BoolToVisibility}}">
                     <StackPanel>
                         <TextBlock Text="Экспорт расписания" Foreground="{DynamicResource AccentColor}" FontWeight="Bold" FontSize="16" Margin="0,0,0,15"/>
