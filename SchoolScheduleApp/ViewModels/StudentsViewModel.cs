@@ -57,7 +57,7 @@ namespace SchoolScheduleApp.ViewModels
             }
             catch (Exception ex)
             {
-                ToastService.Show("РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РєР»Р°СЃСЃС‹: " + ex.Message, "РћС€РёР±РєР°", true);
+                ToastService.Show("Не удалось загрузить классы: " + ex.Message, "Ошибка", true);
             }
         }
 
@@ -83,7 +83,7 @@ namespace SchoolScheduleApp.ViewModels
 
                 if (existing.Any(c => string.Equals(c.Name, newClass.Name, StringComparison.OrdinalIgnoreCase)))
                 {
-                    ToastService.Show("РљР»Р°СЃСЃ СЃ С‚Р°РєРёРј РЅР°Р·РІР°РЅРёРµРј СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚.", "РћС€РёР±РєР°", true);
+                    ToastService.Show("Класс с таким названием уже существует.", "Ошибка", true);
                     return;
                 }
 
@@ -103,7 +103,7 @@ namespace SchoolScheduleApp.ViewModels
             }
             catch (Exception ex)
             {
-                ToastService.Show("РќРµ СѓРґР°Р»РѕСЃСЊ РґРѕР±Р°РІРёС‚СЊ РєР»Р°СЃСЃ: " + ex.Message, "РћС€РёР±РєР°", true);
+                ToastService.Show("Не удалось добавить класс: " + ex.Message, "Ошибка", true);
             }
         }
 
@@ -147,7 +147,7 @@ namespace SchoolScheduleApp.ViewModels
                     && string.Equals(c.Name, updated.Name, StringComparison.OrdinalIgnoreCase));
                 if (nameExists)
                 {
-                    ToastService.Show("РљР»Р°СЃСЃ СЃ С‚Р°РєРёРј РЅР°Р·РІР°РЅРёРµРј СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚.", "РћС€РёР±РєР°", true);
+                    ToastService.Show("Класс с таким названием уже существует.", "Ошибка", true);
                     return;
                 }
 
@@ -170,7 +170,7 @@ namespace SchoolScheduleApp.ViewModels
             }
             catch (Exception ex)
             {
-                ToastService.Show("РќРµ СѓРґР°Р»РѕСЃСЊ РёР·РјРµРЅРёС‚СЊ РєР»Р°СЃСЃ: " + ex.Message, "РћС€РёР±РєР°", true);
+                ToastService.Show("Не удалось изменить класс: " + ex.Message, "Ошибка", true);
             }
         }
 
@@ -187,13 +187,13 @@ namespace SchoolScheduleApp.ViewModels
                 var hasWorkloads = SchoolApiClient.GetWorkloads(classId: ac.Id).Any();
                 if (hasWorkloads)
                 {
-                    ToastService.Show("РќРµР»СЊР·СЏ СѓРґР°Р»РёС‚СЊ РєР»Р°СЃСЃ: РґР»СЏ РЅРµРіРѕ СѓР¶Рµ Р·Р°РґР°РЅР° РЅР°РіСЂСѓР·РєР°.", "РћС€РёР±РєР°", true);
+                    ToastService.Show("Нельзя удалить класс: для него уже задана нагрузка.", "Ошибка", true);
                     return;
                 }
 
                 var result = MessageBox.Show(
-                    $"РЈРґР°Р»РёС‚СЊ РєР»Р°СЃСЃ \"{ac.Name}\"?",
-                    "РџРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ",
+                    $"Удалить класс \"{ac.Name}\"?",
+                    "Подтверждение",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Question);
 
@@ -209,7 +209,7 @@ namespace SchoolScheduleApp.ViewModels
             }
             catch (Exception ex)
             {
-                ToastService.Show("РќРµ СѓРґР°Р»РѕСЃСЊ СѓРґР°Р»РёС‚СЊ РєР»Р°СЃСЃ: " + ex.Message, "РћС€РёР±РєР°", true);
+                ToastService.Show("Не удалось удалить класс: " + ex.Message, "Ошибка", true);
             }
         }
     }
