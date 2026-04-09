@@ -24,7 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Assets\1.png" />
     <Resource Include="Assets\admin.png" />
     <Resource Include="Assets\app.ico" />
     <Resource Include="Assets\app1.ico" />
